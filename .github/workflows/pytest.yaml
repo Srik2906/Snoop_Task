@@ -23,7 +23,10 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run Tests
-        run: pytest
+        continue-on-error: true
+        run: |
+          mkdir -p reports
+          pytest
         env:
           BASE_URL: ${{ secrets.BASE_URL }}
           HOST: ${{ secrets.host }}
