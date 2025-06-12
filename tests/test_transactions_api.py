@@ -1,3 +1,5 @@
+from http.client import responses
+
 import pytest
 import requests
 from datetime import datetime
@@ -22,7 +24,8 @@ CUSTOMERS = {
     "Customer2": "746c51bc-bdb9-44d2-9a3e-c4715bc91ee4",  # Will return upto 5 transactions with expected behaviour
     "Customer3": "5723a60b-b7f5-4259-b670-43bd3be1cf90",  # Will return upto 5 transactions with unexpected behaviours
     "Customer4": "13ef28a8-9488-4d19-ba2f-3ff44912c5e8",  # Will return upto 5 transactions with unexpected behaviours
-    "Customer5": "0828a547-f4bf-433a-b3ef-0dc70d6bad8a"  # Will return upto 5 transactions with unexpected behaviours
+    "Customer5": "0828a547-f4bf-433a-b3ef-0dc70d6bad8a",  # Will return upto 5 transactions with unexpected behaviours
+    "UnknownCustomer" : "4c67b4d3-f967-4706-84f3-9611d726fcbf" #Non-existing customer id
 }
 
 transaction_schema = {
@@ -157,6 +160,20 @@ class TestTransactionsAPI:
             assert response.text == '"Missing customerId query parameter"'
             assert response.headers.get('content-type') == 'application/json'
             log.info("✅ Test passed: test_missing_customer_id")
+        except AssertionError as e:
+            log.error(f"❌ Assertion failed {e}")
+            raise
+
+    def test_unknown_customer_id(self):
+        """
+            Validate that unknown customer ID results in a 404 response.
+        """
+        try:
+            response = self.make_request(CUSTOMERS["UnknownCustomer"])
+            assert response.status_code == 404
+            assert response.text == '"Unknown customerId"'
+            assert response.headers.get('content-type') == 'application/json'
+            log.info("✅ Test passed: test_unknown_customer_id")
         except AssertionError as e:
             log.error(f"❌ Assertion failed {e}")
             raise
