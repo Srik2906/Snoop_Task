@@ -7,7 +7,6 @@ jobs:
   run-tests:
     runs-on: ubuntu-latest
 
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -22,11 +21,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run Tests
-        continue-on-error: true
+      - name: Run Tests and Save Exit Code
         run: |
           mkdir -p reports
-          pytest
+          pytest || echo $? > .exit_code
         env:
           BASE_URL: ${{ secrets.BASE_URL }}
           HOST: ${{ secrets.host }}
@@ -36,3 +34,9 @@ jobs:
         with:
           name: pytest-report
           path: reports/report.html
+
+      - name: Fail the job if tests failed
+        run: |
+          if [ -f .exit_code ]; then
+            exit $(cat .exit_code)
+          fi
